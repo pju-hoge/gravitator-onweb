@@ -2,7 +2,7 @@ name: Update Pi-hole Blocklist
 
 on:
   schedule:
-    - cron: '0 0 * * *' # 毎日 00:00 UTC に実行
+    - cron: '17 17 * * *' # 毎日 17:17 UTC (02:17 JST) に実行
   workflow_dispatch: # 手動実行用
 
 jobs:
