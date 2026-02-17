@@ -8,24 +8,20 @@ JPCERT_GITHUB_REPO = "https://github.com/JPCERTCC/phishurl-list.git"
 OUTPUT_FILE = "pihole_blocklist.txt"
 JPCERT_LOCAL_REPO_PATH = "phishurl-list"
 
-# Whitelist Configuration
-# Domains in this set will NOT be added to the generated blocklist.
-WHITELIST_ROOT_DOMAINS = {
-    "google.com",
-    "googleapis.com",
-    "github.com",
-    "githubusercontent.com",
-    "microsoft.com",
-    "apple.com",
-    "icloud.com",
-    "amazon.com",
-    "amazonaws.com",
-    "cloudflare.com",
-    "sakura.ne.jp",
-    "line.me",
-    "yahoo.co.jp",
-    "rakuten.co.jp",
-}
+WHITELIST_FILE = "whitelist.txt"
+
+def load_whitelist():
+    """Loads the whitelist from a file."""
+    whitelist = set()
+    if os.path.exists(WHITELIST_FILE):
+        with open(WHITELIST_FILE, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    whitelist.add(line.lower())
+    else:
+        print(f"Warning: {WHITELIST_FILE} not found.")
+    return whitelist
 
 def is_valid_domain(domain):
     """Checks if a string is a valid-looking domain name."""
@@ -69,6 +65,9 @@ def update_jpcert_repo():
 def generate_blocklist():
     """Generates the Pi-hole blocklist from JPCERT/CC data."""
     domains = set()
+    whitelist = load_whitelist()
+    print(f"Loaded {len(whitelist)} domains from whitelist.")
+    
     csv_files = glob.glob(os.path.join(JPCERT_LOCAL_REPO_PATH, '**', '*.csv'), recursive=True)
     print(f"Found {len(csv_files)} CSV files.")
 
@@ -85,10 +84,16 @@ def generate_blocklist():
                                 domain = parsed_url.hostname
                                 if domain:
                                     domain_lower = domain.lower()
-                                    root_domain = get_root_domain(domain_lower)
-                                    if domain_lower in WHITELIST_ROOT_DOMAINS or \
-                                       (root_domain and root_domain in WHITELIST_ROOT_DOMAINS):
+                                    
+                                    # Check against whitelist (endswith match)
+                                    is_whitelisted = False
+                                    for wl_domain in whitelist:
+                                        if domain_lower.endswith(wl_domain):
+                                            is_whitelisted = True
+                                            break
+                                    if is_whitelisted:
                                         continue
+
                                     if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", domain_lower):
                                         continue
                                     if is_valid_domain(domain_lower):

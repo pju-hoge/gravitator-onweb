@@ -2,3 +2,4 @@ phishurl-list/
 __pycache__/
 *.pyc
 log
+venv/

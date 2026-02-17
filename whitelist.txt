@@ -1,0 +1,18 @@
+# Whitelist for Pi-hole blocklist generator
+# Domains ending with these strings will be excluded from the blocklist.
+
+linkedin.com
+google.com
+googleapis.com
+github.com
+githubusercontent.com
+microsoft.com
+apple.com
+icloud.com
+amazon.com
+amazonaws.com
+cloudflare.com
+sakura.ne.jp
+line.me
+yahoo.co.jp
+rakuten.co.jp
